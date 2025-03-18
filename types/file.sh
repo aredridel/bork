@@ -1,23 +1,23 @@
 # TODO change compiled filename transformation to md5 representation instead of base64
 # TODO any way to test for sudo???
 
-action=$1
-targetfile=$2
-sourcefile=$3
+action="$1"
+targetfile="$2"
+sourcefile="$3"
 shift 3
 
-perms=$(arguments get permissions $*)
-owner=$(arguments get owner $*)
+perms="$(arguments get permissions "$@")"
+owner="$(arguments get owner "$@")"
 _bake () {
   if [ -n "$owner" ]; then
-    bake sudo $*
-  else bake $*
+    bake sudo "$@"
+  else bake "$@"
   fi
 }
 file_varname="borkfiles__$(echo "$sourcefile" | base64 | sed -E 's|\+|_|' | sed -E 's|\?|__|' | sed -E 's|=+||')"
-target_platform=$(get_baking_platform)
+target_platform="$(get_baking_platform)"
 
-case $action in
+case "$action" in
   desc)
     echo "asserts the presence, checksum, owner and permissions of a file"
     echo "* file target-path source-path [arguments]"
@@ -25,71 +25,69 @@ case $action in
     echo "--owner=owner-name      owner name of the file"
     ;;
   status)
-
-    if ! is_compiled && [ ! -f $sourcefile ]; then
+    if ! is_compiled && [ ! -f "$sourcefile" ]; then
       echo "source file doesn't exist: $sourcefile"
-      return $STATUS_FAILED_ARGUMENTS
+      return "$STATUS_FAILED_ARGUMENTS"
     fi
     if [ -n "$owner" ]; then
-      owner_id=$(bake id -u $owner)
+      owner_id="$(bake id -u "$owner")"
       if [ "$?" -gt 0 ]; then
         echo "unknown owner: $owner"
-        return $STATUS_FAILED_ARGUMENT_PRECONDITION
+        return "$STATUS_FAILED_ARGUMENT_PRECONDITION"
       fi
     fi
 
-    bake [ -f $targetfile ] || return $STATUS_MISSING
+    bake [ -f "$targetfile" ] || return "$STATUS_MISSING"
 
     if is_compiled; then
-      md5c=$(md5cmd $target_platform)
-      sourcesum=$(echo "${!file_varname}" | base64 --decode | eval $md5c)
+      sourcesum="$(echo "${!file_varname}" | base64 --decode | md5fn)"
     else
-      sourcesum=$(eval $(md5cmd $target_platform $sourcefile))
+      sourcesum="$(md5fn "$sourcefile")"
     fi
-    targetsum=$(_bake $(md5cmd $target_platform $targetfile))
-    if [ "$targetsum" != $sourcesum ]; then
+    targetsum="$(bake md5fn "$targetfile")"
+    if [ "$targetsum" != "$sourcesum" ]; then
       echo "expected sum: $sourcesum"
       echo "received sum: $targetsum"
-      return $STATUS_CONFLICT_UPGRADE
+      return "$STATUS_CONFLICT_UPGRADE"
     fi
 
     mismatch=
     if [ -n "$perms" ]; then
-      existing_perms=$(_bake $(permission_cmd $target_platform) $targetfile)
-      if [ "$existing_perms" != $perms ]; then
+      existing_perms="$(_bake "$(permission_cmd "$target_platform")" "$targetfile")"
+      if [ "$existing_perms" != "$perms" ]; then
         echo "expected permissions: $perms"
         echo "received permissions: $existing_perms"
         mismatch=1
       fi
     fi
     if [ -n "$owner" ]; then
-      existing_user=$(_bake ls -l $targetfile | awk '{print $3}')
-      if [ "$existing_user" != $owner ]; then
+      existing_user="$(_bake ls -l "$targetfile" | awk '{print $3}')"
+      if [ "$existing_user" != "$owner" ]; then
         echo "expected owner: $owner"
         echo "received owner: $existing_user"
         mismatch=1
       fi
     fi
-    [ -n "$mismatch" ] && return $STATUS_MISMATCH_UPGRADE
+    [ -n "$mismatch" ] && return "$STATUS_MISMATCH_UPGRADE"
     return 0
     ;;
 
   install|upgrade)
-    dirn=$(dirname $targetfile)
-    [ "$dirn" != . ] && _bake mkdir -p $dirn
-    [ -n "$owner" ] && _bake chown $owner $dirn
+    dirn="$(dirname "$targetfile")"
+    [ "$dirn" != . ] && _bake mkdir -p "$dirn"
+    [ -n "$owner" ] && _bake chown "$owner" "$dirn"
     if is_compiled; then
-      _bake "echo \"${!file_varname}\" | base64 --decode > $targetfile"
+      _bake "echo \"${!file_varname}\" | base64 --decode > '$targetfile'"
     else
-      _bake cp $sourcefile $targetfile
+      _bake cp "$sourcefile" "$targetfile"
     fi
-    [ -n "$owner" ] && _bake chown $owner $targetfile
-    [ -n "$perms" ] && _bake chmod $perms $targetfile
+    [ -n "$owner" ] && _bake chown "$owner" "$targetfile"
+    [ -n "$perms" ] && _bake chmod "$perms" "$targetfile"
     return 0
     ;;
 
   remove)
-    _bake rm $targetfile
+    _bake rm "$targetfile"
     ;;
 
   compile)
@@ -102,8 +100,8 @@ case $action in
       exit 1
     fi
     echo "# source: $sourcefile"
-    echo "# md5 sum: $(eval $(md5cmd $target_platform $sourcefile))"
-    echo "$file_varname=\"$(cat $sourcefile | base64)\""
+    echo "# md5 sum: $(eval "$(md5cmd "$target_platform" "$sourcefile")")"
+    echo "$file_varname=\"$(cat "$sourcefile" | base64)\""
     ;;
 
   *) return 1 ;;

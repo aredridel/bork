@@ -6,16 +6,16 @@
 # but a purposeful one.
 BORK_SETUP_FUNCTION=$(cat <<HERE
 getDir () {
-  fname=\$1
+  fname="\$1"
   while [ -h "\$fname" ]; do
     dir=\$(cd -P "\$(dirname "\$fname")" && pwd)
-    fname=\$(readlink \$fname)
-    [[ \$fname != /* ]] && fname="\$dir/\$fname"
+    fname="\$(readlink "\$fname")"
+    [[ "\$fname" != /* ]] && fname="\$dir/\$fname"
   done
-  echo "\$(cd "\$(dirname \$fname)" && pwd -P)"
+  echo "\$(cd "\$(dirname "\$fname")" && pwd -P)"
 }
 # used by loader to find core/ and stdlib/
-BORK_SOURCE_DIR="\$(cd \$(getDir \${BASH_SOURCE[0]})/.. && pwd -P)"
+BORK_SOURCE_DIR="\$(cd "\$(getDir \${BASH_SOURCE[0]})"/.. && pwd -P)"
 HERE
 )
 eval "$BORK_SETUP_FUNCTION"
@@ -23,70 +23,70 @@ eval "$BORK_SETUP_FUNCTION"
 # --------------------------------------------------------
 is_compiled () { return 1; }
 
-operation=$1
+operation="$1"
 shift
 
 # used by include to find 'include foo/bar.sh'
-BORK_SCRIPT_DIR=$PWD
+BORK_SCRIPT_DIR="$PWD"
 if [ -n "$1" ]; then
-    BORK_SCRIPT_DIR=$(getDir "$1")
+    BORK_SCRIPT_DIR="$(getDir "$1")"
 fi
-BORK_WORKING_DIR=$PWD
+BORK_WORKING_DIR="$PWD"
 
-for file in $BORK_SOURCE_DIR/lib/helpers/*.sh \
-            $BORK_SOURCE_DIR/lib/declarations/*.sh \
-            $BORK_SOURCE_DIR/lib/support/*.sh;
+for file in "$BORK_SOURCE_DIR"/lib/helpers/*.sh \
+            "$BORK_SOURCE_DIR"/lib/declarations/*.sh \
+            "$BORK_SOURCE_DIR"/lib/support/*.sh;
 do
-  . $file
+  . "$file"
 done
 
 case "$operation" in
-  compile) bork_compile $* ;;
+  compile) bork_compile "$@" ;;
   load) : ;;
   satisfy | status)
     BORK_EXIT_STATUS=0
-    . $1
-    exit $BORK_EXIT_STATUS
+    . "$1"
+    exit "$BORK_EXIT_STATUS"
     ;;
   check)
-    fn=$1
+    fn="$1"
     shift
     operation=status
-    $fn $* ;;
+    "$fn" "$@" ;;
   do)
-    fn=$1
+    fn="$1"
     shift
     operation=satisfy
-    $fn $* ;;
+    "$fn" "$@" ;;
   types)
-    typearg=$1
+    typearg="$1"
     shift
-    if [ -z $typearg ]; then
-      for type in $BORK_SOURCE_DIR/types/*.sh; do
-        type_help $type
+    if [ -z "$typearg" ]; then
+      for type in "$BORK_SOURCE_DIR"/types/*.sh; do
+        type_help "$type"
       done
     else
       type_help "$BORK_SOURCE_DIR/types/$typearg.sh"
     fi
     ;;
   docgen)
-    for type in $BORK_SOURCE_DIR/types/*.sh; do
-      if [ ! -s "$BORK_SOURCE_DIR/docs/_types/$(basename $type '.sh').md" ]; then
-        desc=$(. $type desc)
+    for type in "$BORK_SOURCE_DIR"/types/*.sh; do
+      if [ ! -s "$BORK_SOURCE_DIR/docs/_types/$(basename "$type" '.sh').md" ]; then
+        desc="$(. "$type" desc)"
         i=0
         summary=
         usage=
         while read -r line; do
-          [ "$i" -eq 0 ] && summary=$line || usage=$([ -n "$usage" ] && echo "$usage"; echo "$line")
+          [ "$i" -eq 0 ] && summary="$line" || usage="$([ -n "$usage" ] && echo "$usage"; echo "$line")"
           (( i ++ ))
         done <<< "$desc"
-        echo -e "---\nname: $(basename $type '.sh')\n---\n$summary" > "$BORK_SOURCE_DIR/docs/_types/$(basename $type '.sh').md"
+        echo -e "---\nname: $(basename "$type" '.sh')\n---\n$summary" > "$BORK_SOURCE_DIR/docs/_types/$(basename "$type" '.sh').md"
         if [ -n "$usage" ]; then
-          echo -e "\n\n### Usage\n\n\`\`\`bash" >> "$BORK_SOURCE_DIR/docs/_types/$(basename $type '.sh').md"
+          echo -e "\n\n### Usage\n\n\`\`\`bash" >> "$BORK_SOURCE_DIR/docs/_types/$(basename "$type" '.sh').md"
           while read -r line; do
-            echo -e "$line" >> "$BORK_SOURCE_DIR/docs/_types/$(basename $type '.sh').md"
+            echo -e "$line" >> "$BORK_SOURCE_DIR/docs/_types/$(basename "$type" '.sh').md"
           done <<< "$usage"
-          echo -e "\`\`\`" >> "$BORK_SOURCE_DIR/docs/_types/$(basename $type '.sh').md"
+          echo -e "\`\`\`" >> "$BORK_SOURCE_DIR/docs/_types/$(basename "$type" '.sh').md"
         fi
       fi
     done
@@ -95,10 +95,10 @@ case "$operation" in
     echo "bork 0.14.0"
     if [ -d "$BORK_SOURCE_DIR/.git" ]; then
       echo "Installed via git"
-      branch=$(git --git-dir="$BORK_SOURCE_DIR/.git" symbolic-ref --short HEAD 2>/dev/null)
-      branch_status=$?
-      ref=$(git --git-dir="$BORK_SOURCE_DIR/.git" rev-parse --short HEAD)
-      if [ $branch_status -eq 0 ]; then
+      branch="$(git --git-dir="$BORK_SOURCE_DIR/.git" symbolic-ref --short HEAD 2>/dev/null)"
+      branch_status="$?"
+      ref="$(git --git-dir="$BORK_SOURCE_DIR/.git" rev-parse --short HEAD)"
+      if [ "$branch_status" -eq 0 ]; then
         echo "On branch $branch at $ref"
       else
         echo "Detached HEAD at $ref"
@@ -114,15 +114,15 @@ case "$operation" in
     exit 0
     ;;
   inspect)
-    typearg=$1
-    if [ -z $typearg ]; then
+    typearg="$1"
+    if [ -z "$typearg" ]; then
       echo "missing a type to inspect"
       echo "usage: bork inspect [type]"
       exit 1
     else
       typefile="$BORK_SOURCE_DIR/types/$typearg.sh"
-      if [ -s $typefile ]; then
-        . $typefile inspect
+      if [ -s "$typefile" ]; then
+        . "$typefile" inspect
         if [ $? -eq 1 ]; then
           echo "$typearg is not inspectable"
           exit 1
