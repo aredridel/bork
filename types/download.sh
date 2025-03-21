@@ -12,10 +12,10 @@ case "$action" in
         ;;
 
     status)
-        bake [ -f "\"$targetfile\"" ] || return "$STATUS_MISSING"
+        bake [ -f "$targetfile" ] || return "$STATUS_MISSING"
 
         if [ -n "$size" ]; then
-            fileinfo=$(bake ls -al "\"$targetfile\"")
+            fileinfo=$(bake ls -al "$targetfile")
             sourcesize=$(echo "$fileinfo" | tr -s ' ' | cut -d' ' -f5)
             remoteinfo=$(bake $(http_head_cmd "$sourceurl"))
             remotesize=$(http_header "Content-Length" "$remoteinfo")
