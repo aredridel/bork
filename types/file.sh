@@ -40,12 +40,12 @@ case "$action" in
     bake [ -f "$targetfile" ] || return "$STATUS_MISSING"
 
     if is_compiled; then
-      md5c=$(md5cmd $target_platform)
-      sourcesum=$(echo "${!file_varname}" | base64 --decode | eval $md5c)
+      md5c="$(md5cmd "$target_platform")"
+      sourcesum="$(echo "${!file_varname}" | base64 --decode | eval "$md5c")"
     else
-      sourcesum=$(eval $(md5cmd $target_platform $sourcefile))
+      sourcesum="$(eval "$(md5cmd "$target_platform" "$sourcefile")")"
     fi
-    targetsum=$(_bake $(md5cmd $target_platform $targetfile))
+    targetsum="$(eval _bake "$(md5cmd "$target_platform" "$targetfile")")"
     if [ "$targetsum" != $sourcesum ]; then
       echo "expected sum: $sourcesum"
       echo "received sum: $targetsum"
@@ -101,7 +101,7 @@ case "$action" in
       exit 1
     fi
     echo "# source: $sourcefile"
-    echo "# md5 sum: $(eval $(md5cmd $target_platform $sourcefile))"
+    echo "# md5 sum: $(eval "$(md5cmd "$target_platform" "$sourcefile")")"
     echo "$file_varname=\"$(cat $sourcefile | base64)\""
     ;;
 
