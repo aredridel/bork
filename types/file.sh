@@ -100,7 +100,7 @@ case "$action" in
       exit 1
     fi
     echo "# source: $sourcefile"
-    echo "# md5 sum: $(eval "$(md5cmd "$target_platform" "$sourcefile")")"
+    echo "# md5 sum: $(md5fn "$sourcefile")"
     echo "$file_varname=\"$(cat "$sourcefile" | base64)\""
     ;;
 
