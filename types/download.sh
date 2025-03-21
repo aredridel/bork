@@ -1,8 +1,8 @@
-action=$1
-targetfile=$2
-sourceurl=$3
+action="$1"
+targetfile="$2"
+sourceurl="$3"
 shift 3
-size=$(arguments get size $*)
+size="$(arguments get size "$@")"
 
 case "$action" in
     desc)
@@ -12,25 +12,25 @@ case "$action" in
         ;;
 
     status)
-        bake [ -f "\"$targetfile\"" ] || return $STATUS_MISSING
+        bake [ -f "\"$targetfile\"" ] || return "$STATUS_MISSING"
 
         if [ -n "$size" ]; then
-            fileinfo=$(bake ls -al "\"$targetfile\"")
-            sourcesize=$(echo "$fileinfo" | tr -s ' ' | cut -d' ' -f5)
-            remoteinfo=$(bake $(http_head_cmd "$sourceurl"))
-            remotesize=$(http_header "Content-Length" "$remoteinfo")
-            remotesize=${remotesize%%[^0-9]*}
+            fileinfo="$(bake ls -al "\"$targetfile\"")"
+            sourcesize="$(echo "$fileinfo" | tr -s ' ' | cut -d' ' -f5)"
+            remoteinfo="$(bake http_head "$sourceurl")"
+            remotesize="$(http_header "Content-Length" "$remoteinfo")"
+            remotesize="${remotesize%%[^0-9]*}"
             if [ "$sourcesize" != "$remotesize" ]; then
                 echo "expected size: $remotesize bytes"
-                echo "received size: $localsize bytes"
-                return $STATUS_CONFLICT_UPGRADE
+                echo "received size: $sourcesize bytes"
+                return "$STATUS_CONFLICT_UPGRADE"
             fi
         fi
-        return $STATUS_OK
+        return "$STATUS_OK"
     ;;
 
     install|upgrade)
-        bake $(http_get_cmd "$sourceurl" "$targetfile")
+        bake http_get "$sourceurl" "$targetfile"
     ;;
 
     remove)
