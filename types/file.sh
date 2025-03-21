@@ -54,7 +54,7 @@ case "$action" in
 
     mismatch=
     if [ -n "$perms" ]; then
-      existing_perms="$(_bake permission_cmd "$target_platform" "$targetfile")"
+      existing_perms="$(_bake $(permission_cmd "$target_platform") "$targetfile")"
       if [ "$existing_perms" != "$perms" ]; then
         echo "expected permissions: $perms"
         echo "received permissions: $existing_perms"

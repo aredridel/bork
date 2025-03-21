@@ -151,7 +151,7 @@ is_compiled () { [ -n "$is_compiled" ]; }
   run file install path/to/target path/from/source
   [ "$status" -eq $STATUS_OK ]
   run baked_output
-  expected="echo \"$borkfiles__cGF0aC9mcm9tL3NvdXJjZQo\" | base64 --decode > path/to/target"
+  expected="echo \"$borkfiles__cGF0aC9mcm9tL3NvdXJjZQo\" | base64 --decode > 'path/to/target'"
   expected=$(echo $expected)
   [[ "${lines[1]}" = $expected ]]
 }
