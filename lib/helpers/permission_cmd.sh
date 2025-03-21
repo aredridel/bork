@@ -8,7 +8,7 @@ permission_cmd () {
 
 permission_cmd_dir () {
   case $1 in
-    Linux) echo "stat --printf '%U\\n%G\\n%a'" ;;
+    Linux) echo "stat --printf '%U\n%G\n%a'" ;;
     Darwin|FreeBSD) echo "stat -f '%Su%n%Sg%n%Lp'" ;;
     *) return 1 ;;
   esac
