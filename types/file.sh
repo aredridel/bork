@@ -40,12 +40,13 @@ case "$action" in
     bake [ -f "$targetfile" ] || return "$STATUS_MISSING"
 
     if is_compiled; then
-      sourcesum="$(echo "${!file_varname}" | base64 --decode | md5fn)"
+      md5c=$(md5cmd $target_platform)
+      sourcesum=$(echo "${!file_varname}" | base64 --decode | eval $md5c)
     else
-      sourcesum="$(md5fn "$sourcefile")"
+      sourcesum=$(eval $(md5cmd $target_platform $sourcefile))
     fi
-    targetsum="$(_bake cat "$targetfile" | md5fn)"
-    if [ "$targetsum" != "$sourcesum" ]; then
+    targetsum=$(_bake $(md5cmd $target_platform $targetfile))
+    if [ "$targetsum" != $sourcesum ]; then
       echo "expected sum: $sourcesum"
       echo "received sum: $targetsum"
       return "$STATUS_CONFLICT_UPGRADE"
