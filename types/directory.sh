@@ -2,11 +2,11 @@ action="$1"
 dir="$2"
 shift 2
 
-owner=$(arguments get owner $*)
-group=$(arguments get group $*)
-mode=$(arguments get mode $*)
+owner="$(arguments get owner "$@")"
+group="$(arguments get group "$@")"
+mode="$(arguments get mode "$@")"
 
-target_platform=$(get_baking_platform)
+target_platform="$(get_baking_platform)"
 
 case "$action" in
   desc)
@@ -27,24 +27,24 @@ case "$action" in
     }
 
     mismatch=false
-    if [[ -n ${owner} || -n ${group} || -n ${mode} ]]; then
-      dir_stat=($(bake $(permission_cmd_dir $target_platform) "${dir}"))
+    if [[ -n "${owner}" || -n "${group}" || -n "${mode}" ]]; then
+      dir_stat=( $(bake $(permission_cmd_dir "$target_platform") "${dir}"))
 
-      if [[ -n ${owner} && ${dir_stat[0]} != ${owner} ]]; then
+      if [[ -n "${owner}" && "${dir_stat[0]}" != "${owner}" ]]; then
         printf '%s owner: %s\n' \
           'expected' "${owner}" \
           'received' "${dir_stat[0]}"
         mismatch=true
       fi
 
-      if [[ -n ${group} && ${dir_stat[1]} != ${group} ]]; then
+      if [[ -n "${group}" && "${dir_stat[1]}" != "${group}" ]]; then
         printf '%s group: %s\n' \
           'expected' "${group}" \
           'received' "${dir_stat[1]}"
         mismatch=true
       fi
 
-      if [[ -n ${mode} && ${dir_stat[2]} != ${mode} ]]; then
+      if [[ -n "${mode}" && "${dir_stat[2]}" != "${mode}" ]]; then
         printf '%s mode: %s\n' \
           'expected' "${mode}" \
           'received' "${dir_stat[2]}"
