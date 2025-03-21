@@ -7,7 +7,7 @@ http_head() {
     shift 1
     has_curl
     if [ "$?" -eq 0 ]; then
-        curl -sIL "$url"
+        bake curl -sIL "$url"
     else
         echo "curl not found; wget support not implemented yet" 1>&2
         return 1
@@ -37,7 +37,7 @@ http_get () {
     target="$2"
     has_curl
     if [ "$?" -eq 0 ]; then
-        curl -sLo "$target" "$url" &> /dev/null
+        bake curl -sLo "$target" "$url" &> /dev/null
     else
         echo "curl not found; wget support not implemented yet" 1>&2
         return 1

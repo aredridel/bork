@@ -19,10 +19,11 @@ arguments () {
             param="$tmp"
             val="true"
           fi
-        if [ "$param" = "$key" ]; then value="$val"; fi
+          if [ "$param" = "$key" ]; then value="$val"; fi
         fi
       done
       [ -n "$value" ] && echo "$value"
+      return 0
       ;;
     *) return 1 ;;
   esac

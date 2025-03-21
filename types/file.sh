@@ -44,7 +44,7 @@ case "$action" in
     else
       sourcesum="$(md5fn "$sourcefile")"
     fi
-    targetsum="$(bake md5fn "$targetfile")"
+    targetsum="$(_bake md5fn "$targetfile")"
     if [ "$targetsum" != "$sourcesum" ]; then
       echo "expected sum: $sourcesum"
       echo "received sum: $targetsum"
@@ -53,7 +53,7 @@ case "$action" in
 
     mismatch=
     if [ -n "$perms" ]; then
-      existing_perms="$(bake permission "$targetfile")"
+      existing_perms="$(_bake permission "$targetfile")"
       if [ "$existing_perms" != "$perms" ]; then
         echo "expected permissions: $perms"
         echo "received permissions: $existing_perms"
