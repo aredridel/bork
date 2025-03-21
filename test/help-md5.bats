@@ -18,14 +18,21 @@
 @test "md5cmd Linux echoes md5sum with awk" {
   run md5cmd Linux
   [ "$status" -eq 0 ]
-  [ "$output" = "md5sum | awk '{print \$1}'" ]
+  [ "$output" = "md5sum | cut -d ' ' -f 1" ]
 }
 
-@test "md5cmd Linux :file echoes md5sum :file with awk" {
+@test "md5cmd Linux :file echoes md5sum :file with cut" {
   run md5cmd Linux Readme.md
   [ "$status" -eq 0 ]
-  [ "$output" = "md5sum Readme.md | awk '{print \$1}'" ]
+  [ "$output" = "md5sum Readme.md | cut -d ' ' -f 1" ]
 }
+
+@test "md5cmd Linux :file echoes md5sum :quotedfile with cut" {
+  run md5cmd Linux "Readme Now.md"
+  [ "$status" -eq 0 ]
+  [ "$output" = "md5sum Readme\ Now.md | cut -d ' ' -f 1" ]
+}
+
 
 @test "md5cmd FreeBSD echoes 'md5'" {
   run md5cmd FreeBSD
@@ -38,6 +45,12 @@
   run md5cmd FreeBSD Readme.md
   [ "$status" -eq 0 ]
   [ "$output" = "md5 -q Readme.md" ]
+}
+
+@test "md5cmd FreeBSD :quotedfile echoes 'md5 :file'" {
+  run md5cmd FreeBSD "Readme Now.md"
+  [ "$status" -eq 0 ]
+  [ "$output" = "md5 -q Readme\ Now.md" ]
 }
 
 @test "md5cmd BSD returns 1" {
