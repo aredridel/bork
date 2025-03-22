@@ -28,7 +28,7 @@ case "$action" in
 
     mismatch=false
     if [[ -n "${owner}" || -n "${group}" || -n "${mode}" ]]; then
-      dir_stat=( $(eval bake $(permission_cmd_dir "$target_platform") "${dir}") )
+      dir_stat=( $(bake $(permission_cmd_dir "$target_platform") "${dir}") )
 
       if [[ -n "${owner}" && "${dir_stat[0]}" != "${owner}" ]]; then
         printf '%s owner: %s\n' \
