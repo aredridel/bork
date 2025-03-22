@@ -28,27 +28,26 @@ case "$action" in
 
     mismatch=false
     if [[ -n "${owner}" || -n "${group}" || -n "${mode}" ]]; then
-      bake $(permission_cmd_dir "$target_platform") "${dir}" | read cur_owner cur_group cur_mode
-      
+      dir_stat=( $(bake $(permission_cmd_dir "$target_platform") "${dir}") )
 
-      if [[ -n "${owner}" && "${cur_owner}" != "${owner}" ]]; then
+      if [[ -n "${owner}" && "${dir_stat[0]}" != "${owner}" ]]; then
         printf '%s owner: %s\n' \
           'expected' "${owner}" \
-          'received' "${cur_owner}"
+          'received' "${dir_stat[0]}"
         mismatch=true
       fi
 
-      if [[ -n "${group}" && "${cur_group}" != "${group}" ]]; then
+      if [[ -n "${group}" && "${dir_stat[1]}" != "${group}" ]]; then
         printf '%s group: %s\n' \
           'expected' "${group}" \
-          'received' "${cur_group}"
+          'received' "${dir_stat[1]}"
         mismatch=true
       fi
 
-      if [[ -n "${mode}" && "${cur_mode}" != "${mode}" ]]; then
+      if [[ -n "${mode}" && "${dir_stat[2]}" != "${mode}" ]]; then
         printf '%s mode: %s\n' \
           'expected' "${mode}" \
-          'received' "${cur_mode}"
+          'received' "${dir_stat[2]}"
         mismatch=true
       fi
     fi
