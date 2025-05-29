@@ -30,7 +30,7 @@ case "$action" in
     ;;
 
     install|upgrade)
-        bake $(http_get_cmd "$sourceurl" "$targetfile")
+        bake_noquote $(http_get_cmd "$sourceurl" "$targetfile")
     ;;
 
     remove)

@@ -22,6 +22,18 @@ bake () {
   fi
   return
 }
+bake_noquote () {
+  echo "$*" >> $baking_file;
+  key="$(echo "$*" | eval $md5c)"
+  handler="$(bag get responders $key)"
+  p "looking up $* at $key, found $handler"
+  if [ -n "$handler" ]; then
+    eval "$handler"
+  else
+    baking_responder "$@"
+  fi
+  return
+}
 # overwrite this in your tests
 baking_responder () { :; }
 
